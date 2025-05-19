@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+archivos_temporales/
+archivos_guardados/
+ruta_actual.txt
