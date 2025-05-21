@@ -4,7 +4,6 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import os
 import uuid
-import pathlib
 from data_cleaner import DataCleaner
 from file_manager import FileManager
 
@@ -16,6 +15,8 @@ os.makedirs(ARCHIVOS_GUARDADOS, exist_ok=True)
 
 layout = dbc.Container([
     dcc.Location(id="url"),
+    dcc.Interval(id="etl-interval", interval=500, n_intervals=0, max_intervals=5),
+    dcc.Store(id="etl-progress-store", data=0),
 
     html.H2("Proceso ETL - Limpieza de Datos", className="my-3"),
 
@@ -26,6 +27,8 @@ layout = dbc.Container([
         "border": "1px solid #ccc",
         "whiteSpace": "pre-wrap"
     }),
+
+    dbc.Progress(id="etl-progress-bar", value=0, striped=True, animated=True, className="mb-4"),
 
     dbc.Row([
         dbc.Col([
@@ -39,6 +42,8 @@ layout = dbc.Container([
     ]),
 
     html.Br(),
+    html.Div(id="proceso-etl-detallado"),
+
     html.H5("3️⃣ Guardar o descargar archivo limpio"),
     dcc.Dropdown(
         id="save-format",
@@ -62,6 +67,94 @@ layout = dbc.Container([
     dbc.Button("➡️ Ir a análisis exploratorio", href="/eda", color="info", className="mt-3")
 ])
 
+@dash.callback(
+    Output("etl-progress-store", "data"),
+    Output("etl-progress-bar", "value"),
+    Output("etl-progress-bar", "label"),
+    Input("etl-interval", "n_intervals"),
+    prevent_initial_call=False
+)
+def update_progress_bar(n):
+    progress = min(n * 25, 100)
+    label = f"{progress}% Completado" if progress < 100 else "ETL Completado"
+    return progress, progress, label
+
+@dash.callback(
+    Output("original-preview", "children"),
+    Output("clean-preview", "children"),
+    Output("debug-info", "children"),
+    Output("debug-console", "children"),
+    Output("proceso-etl-detallado", "children"),
+    Input("etl-progress-store", "data")
+)
+def limpiar_auto(progress):
+    if progress < 100:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+    log = ""
+    pasos = []
+
+    if not os.path.exists(RUTA_TXT):
+        log += "❌ No se encontró ruta_actual.txt\n"
+        return html.Div("⚠️ No hay ruta guardada."), "", "Archivo .txt no existe", log, ""
+
+    with open(RUTA_TXT, "r") as f:
+        file_path = f.read().strip()
+
+    log += f"📦 Ruta leída:\n{file_path}\n"
+
+    if not os.path.exists(file_path):
+        log += "❌ Archivo no existe\n"
+        return html.Div("❌ Archivo perdido"), "", "Archivo faltante", log, ""
+
+    try:
+        df = pd.read_csv(file_path)
+        preview_original = render_table(df)
+
+        pasos.append(html.Li(f"🔍 Registros originales: {df.shape[0]} filas, {df.shape[1]} columnas"))
+
+        cleaner = DataCleaner(df)
+
+        cleaner.drop_duplicates()
+        pasos.append(html.Li(f"🧹 Duplicados eliminados. Filas después: {cleaner.df.shape[0]}"))
+
+        cleaner.standardize_dates()
+        pasos.append(html.Li(f"📆 Fechas convertidas y filas con fechas inválidas eliminadas"))
+
+        cleaner.fill_missing_values()
+        pasos.append(html.Li(f"🧩 Valores nulos rellenados en columnas como 'country', 'children', etc."))
+
+        cleaner.advanced_imputation_knn()
+        cleaner.create_new_columns()
+        pasos.append(html.Li(f"➕ Columna 'total_nights' creada"))
+
+        cleaner.validate_numeric_columns()
+        pasos.append(html.Li(f"🔢 Columnas numéricas validadas y convertidas"))
+
+        cleaner.drop_missing_targets()
+        pasos.append(html.Li(f"🚫 Filas sin valor en 'is_canceled' eliminadas"))
+
+        cleaner.drop_unused_columns()
+        pasos.append(html.Li(f"🗑️ Columnas eliminadas: 'company', 'reservation_status'"))
+
+        df_clean = cleaner.get_dataframe()
+        temp_path = os.path.join(ARCHIVOS_GUARDADOS, "limpio_temp.csv")
+        df_clean.to_csv(temp_path, index=False)
+
+        preview_clean = render_table(df_clean)
+        log += "✅ Limpieza completada y archivo guardado automáticamente\n"
+
+        resumen_etl = html.Div([
+            html.H5("🧾 Detalle del Proceso de Limpieza (ETL)"),
+            html.Ul(pasos)
+        ])
+
+        return preview_original, preview_clean, "✅ Datos limpios listos", log, resumen_etl
+
+    except Exception as e:
+        log += f"❌ Error:\n{str(e)}"
+        return html.Div("❌ Fallo al procesar archivo"), "", str(e), log, ""
+
 def render_table(df: pd.DataFrame, limit=100):
     return html.Div([
         dash_table.DataTable(
@@ -83,58 +176,6 @@ def render_table(df: pd.DataFrame, limit=100):
             },
         )
     ])
-
-@dash.callback(
-    Output("original-preview", "children"),
-    Output("clean-preview", "children"),
-    Output("debug-info", "children"),
-    Output("debug-console", "children"),
-    Input("url", "pathname")
-)
-def limpiar_auto(pathname):
-    if pathname != "/etl":
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
-    log = ""
-
-    if not os.path.exists(RUTA_TXT):
-        log += "❌ No se encontró ruta_actual.txt\n"
-        return html.Div("⚠️ No hay ruta guardada."), "", "Archivo .txt no existe", log
-
-    with open(RUTA_TXT, "r") as f:
-        file_path = f.read().strip()
-
-    log += f"📦 Ruta leída:\n{file_path}\n"
-
-    if not os.path.exists(file_path):
-        log += "❌ Archivo no existe\n"
-        return html.Div("❌ Archivo perdido"), "", "Archivo faltante", log
-
-    try:
-        df = pd.read_csv(file_path)
-        preview_original = render_table(df)
-
-        cleaner = DataCleaner(df)
-        cleaner.drop_duplicates()
-        cleaner.standardize_dates()
-        cleaner.fill_missing_values()
-        cleaner.advanced_imputation_knn()
-        cleaner.create_new_columns()
-        cleaner.validate_numeric_columns()
-        cleaner.drop_missing_targets()
-        cleaner.drop_unused_columns()
-        df_clean = cleaner.get_dataframe()
-
-        temp_path = os.path.join(ARCHIVOS_GUARDADOS, "limpio_temp.csv")
-        df_clean.to_csv(temp_path, index=False)
-
-        preview_clean = render_table(df_clean)
-        log += "✅ Limpieza completada automáticamente\n"
-        return preview_original, preview_clean, "✅ Datos limpios listos", log
-
-    except Exception as e:
-        log += f"❌ Error:\n{str(e)}"
-        return html.Div("❌ Fallo al procesar archivo"), "", str(e), log
 
 @dash.callback(
     Output("save-output", "children"),

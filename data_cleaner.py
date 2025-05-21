@@ -12,8 +12,6 @@ class DataCleaner:
         if 'reservation_status_date' in self.df.columns:
             self.df['reservation_status_date'] = pd.to_datetime(
                 self.df['reservation_status_date'], errors='coerce', dayfirst=False)
-            
-            # ❌ Eliminar filas con fechas inválidas
             self.df = self.df[self.df['reservation_status_date'].notna()]
 
     def fill_missing_values(self):
@@ -33,7 +31,7 @@ class DataCleaner:
                 self.df[col].fillna(self.df[col].median(), inplace=True)
 
     def advanced_imputation_knn(self):
-        # (Opcional) Imputación avanzada si se requiere
+        # (opcional)
         pass
 
     def create_new_columns(self):
@@ -41,9 +39,19 @@ class DataCleaner:
             self.df['total_nights'] = self.df['stays_in_weekend_nights'] + self.df['stays_in_week_nights']
 
     def validate_numeric_columns(self):
-        numeric_cols = self.df.select_dtypes(include=['float64', 'int64']).columns
-        for col in numeric_cols:
-            self.df[col] = pd.to_numeric(self.df[col], errors='coerce')
+        # Convertir columnas clave a numéricas
+        columnas_numericas = ['lead_time', 'adr', 'is_canceled', 'total_nights', 'adults', 'children', 'babies']
+        for col in columnas_numericas:
+            if col in self.df.columns:
+                self.df[col] = pd.to_numeric(self.df[col], errors='coerce')
+
+        # También validar cualquier columna que sea tipo object pero que parezca número
+        for col in self.df.columns:
+            if self.df[col].dtype == 'object':
+                try:
+                    self.df[col] = pd.to_numeric(self.df[col], errors='ignore')
+                except:
+                    pass
 
     def drop_missing_targets(self):
         if 'is_canceled' in self.df.columns:
