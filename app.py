@@ -25,7 +25,9 @@ app.layout = html.Div([
         dbc.Nav([
             dbc.NavLink("Inicio", href="/", active="exact"),
             dbc.NavLink("Cargar Archivos", href="/upload", active="exact"),
-            dbc.NavLink("Limpieza ETL", href="/etl", active="exact")
+            dbc.NavLink("ETL", href="/etl", active="exact"),
+            dbc.NavLink("Minería de datos", href="/eda", active="exact"),
+            dbc.NavLink("Toma de decisión", href="/goal", active="exact")
         ], pills=True),
 
         html.Hr(),

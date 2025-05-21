@@ -15,7 +15,7 @@ class CancellationPredictor:
     def __init__(self):
         self.model = None
 
-    def train_model(self, df: pd.DataFrame):
+    def train_and_report(self, df: pd.DataFrame) -> str:
         feature_cols = ['lead_time', 'previous_cancellations', 'adr', 'total_nights']
         df_model = df.dropna(subset=feature_cols + ['is_canceled'])
         X = df_model[feature_cols]
@@ -24,9 +24,10 @@ class CancellationPredictor:
         self.model = LogisticRegression(max_iter=1000)
         self.model.fit(X_train, y_train)
         y_pred = self.model.predict(X_test)
-        print("=== Resultados de la predicción de cancelaciones ===")
-        print(classification_report(y_test, y_pred))
-        print(f"Exactitud/accuracy: {accuracy_score(y_test, y_pred):.4f}")
+        report = classification_report(y_test, y_pred)
+        acc = accuracy_score(y_test, y_pred)
+        return f"=== Resultados de la predicción de cancelaciones ===\n{report}\nExactitud/accuracy: {acc:.4f}\n"
+
 
     def predict(self, new_data: pd.DataFrame) -> np.ndarray:
         if self.model is None:
@@ -42,7 +43,7 @@ class StayLengthEstimator:
     def __init__(self):
         self.model = None
 
-    def train_model(self, df: pd.DataFrame):
+    def train_and_report(self, df: pd.DataFrame) -> str:
         feature_cols = ['lead_time', 'adr', 'previous_bookings_not_canceled', 'required_car_parking_spaces']
         df_model = df.dropna(subset=feature_cols + ['total_nights'])
         X = df_model[feature_cols]
@@ -52,8 +53,8 @@ class StayLengthEstimator:
         self.model.fit(X_train, y_train)
         y_pred = self.model.predict(X_test)
         mae = mean_absolute_error(y_test, y_pred)
-        print("=== Resultados de la estimación de duración de estancia ===")
-        print(f"MAE (Mean Absolute Error): {mae:.2f} noches")
+        return f"=== Resultados de la estimación de duración de estancia ===\nMAE (Mean Absolute Error): {mae:.2f} noches\n"
+
 
     def predict(self, new_data: pd.DataFrame) -> np.ndarray:
         if self.model is None:

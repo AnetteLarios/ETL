@@ -1,0 +1,36 @@
+Actividades que cada integrante del equipo realizó:
+
+
+Luna Curiel Diego Israel
+
+• Funcionalidad para predecir cancelaciones de reservas utilizando regresión logística. Usó variables como "lead_time", "adr" y "previous_cancellations" para entrenar el modelo. (4 horas)
+• Implementación del modelo para estimar la duración de estancia ("total_nights") con Random Forest. Tuvo que ajustar bien las variables para que no afectaran los resultados. (3 horas)
+• Desarrollo de la segmentación de clientes con K-Means. Se trabajó con clústeres de clientes según su comportamiento de reserva y valores como "" y "lead_time". (4 horas)
+• Funcionalidad para analizar la demanda mensual de reservas, agrupando por año y mes, y también graficando los resultados (usó matplotlib). (2 horas)
+• Integración de las funciones anteriores en el menú interactivo para que el usuario pueda ejecutar los análisis fácilmente después de limpiar los datos. (1 hora)
+• Revisión de errores cuando no se había entrenado algún modelo o cuando los datos no estaban completos. Se agregaron mensajes para guiar al usuario. (2 horas)
+
+
+
+Magos Durán Eloisa Isabela
+
+• Funcionalidad para eliminar duplicados y estandarizar fechas en la columna reservation_status_date. Se eliminaron registros inválidos para evitar errores. (2 horas)
+• Desarrollo de la imputación de datos faltantes en columnas como agent y company usando muestreo con la distribución real. Se manejó también el caso cuando no había suficientes valores válidos. (2 horas)
+• Implementación de la imputación de valores numéricos usando KNNImputer, pero sin afectar la columna objetivo "is_canceled". (2 horas)
+• Creación de la columna "total_nights" a partir de "stays_in_week_nights" y "stays_in_weekend_nights", y validación de columnas con valores negativos. (2 horas)
+• Funcionalidad para eliminar columnas que no eran necesarias para el análisis final, dejando solo las relevantes. (1.5 horas)
+• Organización del flujo de limpieza paso a paso. Se aseguró que los métodos funcionaran por separado y no afectaran el resto del proceso. (1.5 horas)
+• Apoyo en la integración del proceso de limpieza con el menú principal (main.py) para que el usuario pudiera ver y analizar los datos ya limpios. (1 hora)
+
+
+
+Larios González Anette Paola
+
+• Funcionalidad  para eliminar las tuplas que no tienen datos en la columna “is_canceled” para obtener una mejor predicción. (5 horas)
+• Documentación (2 horas)
+• Migrar el código de Google Colab para que funcione de manera local (fue complicado porque Google colab por sí solo tiene algunas convenciones que no funcionan en el entorno local) (6 horas, hubo muchas cosas que no funcionaban igual D:)
+• Conexión a PostgreSQL (5 horas, fue tardado porque tuve que migrar la funcionalidad de Google Colab, y hay algunas palabras reservadas y funciones que parecían ser propias del entorno, me tardé encontrando una solución)
+• Modificación del menú para incluir la opción de guardar en PostgreSQL 30 min
+• Funcionalidad para que cicle el menú en caso de que el usuario se equivoque insertando los datos de conexión. 30 min
+• Funcionalidad para que el menú itere para que no necesite ejecutar la limpieza para exportar los datos limpios a distintos formatos. 1 hora (todo el problema era que el código estaba mal identado)
+
