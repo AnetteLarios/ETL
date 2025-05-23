@@ -47,10 +47,10 @@ layout = dbc.Container([
     html.Br(),
 
     html.H5("3️⃣ Guardar o descargar archivo limpio"),  # Sección para guardar o descargar archivo
-
+    html.Div(id="proceso-etl-detallado"),
     dcc.Dropdown(                              # Menú desplegable para elegir formato de guardado
 
-    html.Div(id="proceso-etl-detallado"),
+
 
         id="save-format",
         options=[
