@@ -16,7 +16,9 @@ dash.register_page(__name__, path="/data_mining", name="Míneria de datos")
 
 layout = dbc.Container([
     dcc.Location(id="url"),
-    html.H2("Minería de Datos", className="my-3"),
+    html.Div( [
+        html.Img(src="/assets/data_mining.png", style={"height": "35px", "align":"center", "margin-right": "20px", "justify":"center", "margin-top": "20px"}),
+        html.H2("Minería de datos", className="my-3")], style={"display":"flex"}),
     html.Div(id="mining-results", style={"whiteSpace": "pre-wrap", "marginBottom": "20px"}),
     html.Div(id="scatter-plots"),
     html.Div(id="heatmap"),
@@ -24,7 +26,7 @@ layout = dbc.Container([
     html.Div(id="temporal"),
     html.Br(),
     dbc.Button("⬅️ Volver a EDA", href="/eda", color="secondary", className="mt-3"),
-    dbc.Button("➡️ Visualizar objetivo", href="/goal", color="info", className="mt-3")
+    dbc.Button("➡️ Visualizar objetivo", href="/goal", color="info", className="mt-3", style={"margin-left": "10px"}),
 ])
 
 @dash.callback(
@@ -50,31 +52,7 @@ def mostrar_mineria(pathname):
     dendro_fig = html.Div()
     temporal_fig = html.Div()
 
-    # 1. Cancelación de reservas (Clasificación)
-    try:
-        cancelador = CancellationPredictor()
-        cancel_text = cancelador.train_and_report(df)
-        results += (
-            "🔎 **Predicción de Cancelación de Reservas**\n"
-            "Se utiliza regresión logística para predecir si una reserva será cancelada. "
-            "La métrica principal es la exactitud y el reporte de clasificación.\n\n"
-            f"{cancel_text}\n"
-        )
-        # Scatter plot: lead_time vs adr coloreado por is_canceled
-        if 'lead_time' in df.columns and 'adr' in df.columns and 'is_canceled' in df.columns:
-            scatter_plots.append(
-                html.Div([
-                    html.P("Relación entre lead_time y adr, coloreado por cancelación:"),
-                    dcc.Graph(figure=px.scatter(
-                        df, x='lead_time', y='adr', color='is_canceled',
-                        title="Scatter: lead_time vs adr (Cancelación)"
-                    ))
-                ])
-            )
-    except Exception as e:
-        results += f"❌ Error en modelo de cancelación: {e}\n"
-
-    # 2. Estimación de duración de estancia (Regresión)
+    # 1. Estimación de duración de estancia (Regresión)
     try:
         estimator = StayLengthEstimator()
         stay_text = estimator.train_and_report(df)
@@ -98,7 +76,7 @@ def mostrar_mineria(pathname):
     except Exception as e:
         results += f"❌ Error en modelo de estancia: {e}\n"
 
-    # 3. Segmentación de clientes (Clustering)
+    # 2. Segmentación de clientes (Clustering)
     try:
         segmentador = CustomerSegmentation(n_clusters=4)
         df_small = df.sample(min(500, len(df)), random_state=42) if len(df) > 500 else df
@@ -133,7 +111,7 @@ def mostrar_mineria(pathname):
     except Exception as e:
         results += f"❌ Error en segmentación: {e}\n"
 
-    # 4. Análisis temporal (Demanda por mes/año)
+    # 3. Análisis temporal (Demanda por mes/año)
     try:
         temporal = TemporalAnalysis()
         demand_by_month = temporal.monthly_demand(df)
@@ -153,7 +131,7 @@ def mostrar_mineria(pathname):
     except Exception as e:
         results += f"❌ Error en análisis temporal: {e}\n"
 
-    # 5. Heatmap de correlación general
+    # 4. Heatmap de correlación general
     try:
         numeric_cols = df.select_dtypes(include='number').columns
         if len(numeric_cols) > 1:

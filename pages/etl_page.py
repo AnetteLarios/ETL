@@ -15,11 +15,12 @@ ARCHIVOS_GUARDADOS = "archivos_guardados"     # Carpeta donde se guardarán arch
 os.makedirs(ARCHIVOS_GUARDADOS, exist_ok=True) # Crea la carpeta si no existe
 
 
-layout = dbc.Container([                      # Contenedor principal de la página
-    dcc.Location(id="url"),                   # Componente que permite leer la URL actual
-    dcc.Interval(id="etl-interval", interval=500, n_intervals=0, max_intervals=5),
-    dcc.Store(id="etl-progress-store", data=0),
-    html.H2("Proceso ETL - Limpieza de Datos", className="my-3"),   # Título principal
+layout = dbc.Container([
+    dcc.Location(id="url"),
+    html.Div([
+        html.Img(src="assets/etl.png", style={"height": "35px", "margin-top": "20px", "margin-right": "20px"}),
+        html.H2("Proceso ETL - Limpieza de Datos", className="my-3")],style={"display":"flex"}),
+
 
     html.Div(id="debug-info", style={"color": "red", "marginBottom": "15px"}),   # Área para mensajes de error
     html.Pre(id="debug-console", style={       # Consola de depuración con estilo visual
@@ -69,10 +70,9 @@ layout = dbc.Container([                      # Contenedor principal de la pági
     dcc.Download(id="download-cleaned-file"),  # Permite descargar archivos limpios
 
     html.Br(),
-    dbc.Button("⬅️ Volver a carga de archivos", href="/upload", color="secondary", className="mt-3"),  # Navegación a carga
-
-    html.Br(),
-    dbc.Button("➡️ Ir a análisis exploratorio", href="/eda", color="info", className="mt-3")  # Navegación a EDA
+    dbc.Button("⬅️ Volver a carga de archivos", href="/upload", color="secondary", className="mt-3"),
+    dbc.Button("➡️ Ir a análisis exploratorio", href="/eda", color="info", className="mt-3", style={"margin-left": "10px"}),
+    html.Br()
 ])
 
 

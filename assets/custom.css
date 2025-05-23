@@ -1,0 +1,14 @@
+/* assets/custom.css */
+body, .container, .dash-table-container, .dash-spreadsheet-container, .dash-table, .dash-table-container * {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+.nav-pills .nav-link {
+    color: white !important;
+}
+
+
+.nav-pills .nav-link.active {
+    color: #0056b3 !important;  /* o el color que quieras */
+    background-color:#FFFFFF!important;  /* opcional */
+}
