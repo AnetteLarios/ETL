@@ -92,31 +92,16 @@ def render_table(df: pd.DataFrame, limit=100):   # Función que crea una tabla a
     ])
 
 @dash.callback(
-    Output("etl-progress-store", "data"),
-    Output("etl-progress-bar", "value"),
-    Output("etl-progress-bar", "label"),
-    Input("etl-interval", "n_intervals"),
-    prevent_initial_call=False
-)
-def update_progress_bar(n):
-    progress = min(n * 25, 100)
-    label = f"{progress}% Completado" if progress < 100 else "ETL Completado"
-    return progress, progress, label
-
-
-@dash.callback(  # Callback que limpia automáticamente al cargar la página ETL
     Output("original-preview", "children"),
     Output("clean-preview", "children"),
     Output("debug-info", "children"),
     Output("debug-console", "children"),
     Output("proceso-etl-detallado", "children"),
-    Input("etl-progress-store", "data")
+    Input("url", "pathname")
 )
-
-def limpiar_auto(pathname):  # Función que limpia los datos al entrar a /etl
+def limpiar_auto(pathname):
     if pathname != "/etl":
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
     log = ""
     pasos = []
 
@@ -134,35 +119,11 @@ def limpiar_auto(pathname):  # Función que limpia los datos al entrar a /etl
         return html.Div("❌ Archivo perdido"), "", "Archivo faltante", log, ""
 
     try:
-
-        df = pd.read_csv(file_path)            # Lee el archivo original
-        preview_original = render_table(df)    # Prepara vista previa
-
-        cleaner = DataCleaner(df)              # Instancia el limpiador con el DataFrame
-        cleaner.drop_duplicates()              # Elimina duplicados
-        cleaner.standardize_dates()            # Estandariza fechas
-        cleaner.fill_missing_values()          # Llena valores nulos básicos
-        cleaner.advanced_imputation_knn()      # Imputación avanzada con KNN
-        cleaner.create_new_columns()           # Crea nuevas columnas si aplica
-        cleaner.validate_numeric_columns()     # Verifica y limpia columnas numéricas
-        cleaner.drop_missing_targets()         # Elimina filas sin variable objetivo
-        cleaner.drop_unused_columns()          # Elimina columnas innecesarias
-        df_clean = cleaner.get_dataframe()     # Obtiene el DataFrame limpio
-
-        temp_path = os.path.join(ARCHIVOS_GUARDADOS, "limpio_temp.csv")  # Ruta temporal
-        df_clean.to_csv(temp_path, index=False)                          # Guarda temporal
-
-        preview_clean = render_table(df_clean)     # Prepara tabla limpia.
-        log += "✅ Limpieza completada automáticamente\n"
-        return preview_original, preview_clean, "✅ Datos limpios listos", log
-
         df = pd.read_csv(file_path)
         preview_original = render_table(df)
-
         pasos.append(html.Li(f"🔍 Registros originales: {df.shape[0]} filas, {df.shape[1]} columnas"))
 
         cleaner = DataCleaner(df)
-
         cleaner.drop_duplicates()
         pasos.append(html.Li(f"🧹 Duplicados eliminados. Filas después: {cleaner.df.shape[0]}"))
 
