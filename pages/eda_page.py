@@ -12,12 +12,16 @@ dash.register_page(__name__, path="/eda", name="Míneria de datos (EDA y resulta
 
 layout = dbc.Container([
     dcc.Location(id="url"),
+    html.Div( [
+        html.Img(src="/assets/eda.png", style={"height": "35px", "align":"center", "margin-right": "20px", "justify":"center", "margin-top": "20px"}),
+        html.H2("EDA", className="my-3")], style={"display":"flex"}),
     html.Div(id="eda-stats", style={"whiteSpace": "pre-wrap", "marginBottom": "20px"}),
     html.Div(id="eda-hist"),
     html.Div(id="eda-box"),
     html.Br(),
 
-    dbc.Button("➡️ Ejecutar técnicas de minería de datos", href="/data_mining", color="info", className="mt-3")
+    dbc.Button("➡️ Ejecutar técnicas de minería de datos", href="/data_mining", color="info", className="mt-3"),
+    html.Br()
 ])
 
 @dash.callback(
@@ -51,7 +55,7 @@ def mostrar_eda(pathname):
                 f"Columna analizada: {col}\n"
                 f"Media: {media:.2f}\n"
                 f"Mediana: {mediana:.2f}\n"
-                f"Desviación estándar: {desviacion:.2f}"
+                f"Desviación estándar: {desviacion:.2f}\n"
             )
         histograms.append(dcc.Graph(figure=px.histogram(df, x=col, nbins=30, title=f"Histograma de {col}")))
         boxplots.append(dcc.Graph(figure=px.box(df, y=col, title=f"Boxplot de {col}")))

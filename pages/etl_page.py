@@ -16,8 +16,10 @@ os.makedirs(ARCHIVOS_GUARDADOS, exist_ok=True)
 
 layout = dbc.Container([
     dcc.Location(id="url"),
+    html.Div([
+        html.Img(src="assets/etl.png", style={"height": "35px", "margin-top": "20px", "margin-right": "20px"}),
+        html.H2("Proceso ETL - Limpieza de Datos", className="my-3")],style={"display":"flex"}),
 
-    html.H2("Proceso ETL - Limpieza de Datos", className="my-3"),
 
     html.Div(id="debug-info", style={"color": "red", "marginBottom": "15px"}),
     html.Pre(id="debug-console", style={
@@ -57,9 +59,8 @@ layout = dbc.Container([
 
     html.Br(),
     dbc.Button("⬅️ Volver a carga de archivos", href="/upload", color="secondary", className="mt-3"),
-
-    html.Br(),
-    dbc.Button("➡️ Ir a análisis exploratorio", href="/eda", color="info", className="mt-3")
+    dbc.Button("➡️ Ir a análisis exploratorio", href="/eda", color="info", className="mt-3", style={"margin-left": "10px"}),
+    html.Br()
 ])
 
 def render_table(df: pd.DataFrame, limit=100):

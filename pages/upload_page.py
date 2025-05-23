@@ -19,8 +19,11 @@ if not os.path.exists(RUTA_TXT):
         f.write("")
 
 layout = dbc.Container([
-    html.H2("Carga de Archivos (CSV, Excel, JSON)", className="my-3"),
 
+    html.Div( [
+        html.Img(src="/assets/upload.png", style={"height": "35px", "align":"center", "margin-right": "20px", "justify":"center", "margin-top": "20px"}),
+        html.H2("Carga de Archivos (CSV, Excel, JSON)", className="my-3")], style={"display":"flex"}),
+   
     dcc.Upload(
         id='upload-data',
         children=html.Div(['Arrastra o haz clic para subir un archivo']),
@@ -28,7 +31,7 @@ layout = dbc.Container([
             'width': '100%', 'height': '80px', 'lineHeight': '80px',
             'borderWidth': '1px', 'borderStyle': 'dashed',
             'borderRadius': '5px', 'textAlign': 'center',
-            'margin-bottom': '20px'
+            'margin-bottom': '20px', 'backgroundColor':  "#c9e1f8"
         },
         multiple=False
     ),
@@ -37,9 +40,12 @@ layout = dbc.Container([
     html.Div(id='output-preview'),
 
     html.Br(),
-    dbc.Button("Continuar con limpieza de datos ➡️", id="go-to-etl", color="secondary", className="mt-3", disabled=True),
-    dcc.Location(id="url", refresh=True)
-])
+    html.Div([
+        dbc.Button("Continuar con limpieza de datos ➡️", id="go-to-etl", color="secondary", className="mt-3", disabled=True)
+    ], style={"align": "right", "align-items": "right", "justifyContent": "flex-end", "display":"flex"}),
+    dcc.Location(id="url", refresh=True),
+    html.Br(),
+], style={"background-color": "#fdf4e2"},fluid=True)
 
 # Guardar archivo subido y escribir ruta en ruta_actual.txt
 def parse_and_save_file(contents, filename):
