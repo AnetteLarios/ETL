@@ -1,8 +1,8 @@
-import dash
-from dash import html
-import dash_bootstrap_components as dbc
+import dash                                  # Importa el núcleo del framework Dash
+from dash import html                        # Importa componentes HTML (como Div, P, H2, etc.)
+import dash_bootstrap_components as dbc      # Importa componentes con estilo Bootstrap para Dash
 
-dash.register_page(__name__, path="/", name="Inicio")
+dash.register_page(__name__, path="/", name="Inicio")   # Registra esta página como la principal ("/") en una app multipágina
 
 layout = dbc.Container([
     html.Img(src="/assets/landing.jpg", style={"width": "100%"}),
