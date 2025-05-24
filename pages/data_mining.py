@@ -27,6 +27,7 @@ layout = dbc.Container([
     html.Br(),
     dbc.Button("⬅️ Volver a EDA", href="/eda", color="secondary", className="mt-3"),
     dbc.Button("➡️ Visualizar objetivo", href="/goal", color="info", className="mt-3", style={"margin-left": "10px"}),
+    html.Br()
 ])
 
 @dash.callback(
@@ -111,25 +112,40 @@ def mostrar_mineria(pathname):
     except Exception as e:
         results += f"❌ Error en segmentación: {e}\n"
 
-    # 3. Análisis temporal (Demanda por mes/año)
+    # 3. Análisis de Temporalidad de la Demanda: mes de mayor demanda por año
     try:
         temporal = TemporalAnalysis()
         demand_by_month = temporal.monthly_demand(df)
-        results += (
-            "🔎 **Análisis Temporal de la Demanda**\n"
-            "Se analiza la cantidad de reservas por mes y año para identificar tendencias estacionales.\n\n"
+        # Extrae año y mes
+        demand_by_month[['year', 'month']] = demand_by_month['year_month'].str.split('-', expand=True)
+        demand_by_month['year'] = demand_by_month['year'].astype(int)
+        demand_by_month['month'] = demand_by_month['month'].astype(int)
+        # Encuentra el mes de mayor demanda por año
+        idx = demand_by_month.groupby('year')['total_reservas'].idxmax()
+        top_months = demand_by_month.loc[idx].sort_values('year')
+        # Gráfica de meses pico por año
+        fig_temp = px.bar(
+            top_months, x='year', y='total_reservas', color='month',
+            labels={'year': 'Año', 'total_reservas': 'Reservas', 'month': 'Mes'},
+            title="Mes de Mayor Demanda por Año",
+            text='month'
         )
-        # Gráfica de líneas para demanda mensual
-        demand_by_month_sorted = demand_by_month.sort_values('year_month')
-        temporal_fig = html.Div([
-            html.P("Demanda mensual de reservas:"),
-            dcc.Graph(figure=px.line(
-                demand_by_month_sorted, x='year_month', y='total_reservas',
-                title="Demanda Mensual (Total de Reservas)"
-            ))
-        ])
+        explicacion_temporal = (
+            html.Div([
+                html.H4("3. Análisis de Temporalidad de la Demanda"),
+                dcc.Graph(figure=fig_temp),
+                html.P(
+                    "Se muestra el mes con mayor demanda para cada año. "
+                    "Esto permite identificar patrones estacionales y planificar estrategias específicas para los meses pico de cada año."
+                ),
+                html.Ul([
+                    html.Li(f"Año {row['year']}: Mes {row['month']} ({int(row['total_reservas'])} reservas)")
+                    for _, row in top_months.iterrows()
+                ])
+            ])
+        )
     except Exception as e:
-        results += f"❌ Error en análisis temporal: {e}\n"
+        explicacion_temporal = html.Div(f"Error en análisis temporal: {e}")
 
     # 4. Heatmap de correlación general
     try:
